@@ -1,14 +1,23 @@
 package org.example.ddd;
 
+import View.TableauAffichage;
+
 public class Game {
     private int score = 0;
     private int currentFrame = 1;
     private int currentRoll = 1;
     private int[] rolls = new int[21];
 
+    private TableauAffichage displayBoard;
+
+    public Game(TableauAffichage displayBoard) {
+        this.displayBoard = displayBoard;
+    }
+
     public void roll(int pins) {
         rolls[currentRoll++] = pins;
     }
+
 
     public int score() {
         int score = 0;

@@ -1,17 +1,24 @@
 package org.example.ddd;
 
+import View.TableauAffichage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class BowlingTests {
 
     private Game game;
+    private TableauAffichage displayBoard;
 
     @BeforeEach
     public void setUp() {
-        game = new Game();
+        displayBoard = Mockito.mock(TableauAffichage.class);
+        game = new Game(displayBoard);
     }
 
     @Test
@@ -58,5 +65,47 @@ public class BowlingTests {
             game.roll(10);
         }
         assertEquals(300, game.score(), "A perfect game of 12 strikes should result in a score of 300.");
+    }
+
+    @Test
+    void check_Game_ShouldConnectToDisplayBoard() {
+        verify(displayBoard, times(1)).seConnecter();
+    }
+
+    @Test
+    void check_Spare_ShouldNotifyDisplayBoardOnce() {
+        game.roll(5);
+        game.roll(5);
+        verify(displayBoard, times(1)).showSpare();
+    }
+
+    @Test
+    void check_FirstStrike_ShouldNotifyDisplayBoardWithFirst() {
+        game.roll(10);
+        verify(displayBoard, times(1)).showStrike(TableauAffichage.StrikeSerie.PREMIER);
+    }
+
+    @Test
+    void check_SecondStrike_ShouldNotifyDisplayBoardWithSecond() {
+        game.roll(10);
+        game.roll(0);
+        game.roll(0);
+        game.roll(10);
+        verify(displayBoard, times(1)).showStrike(TableauAffichage.StrikeSerie.SECOND);
+    }
+
+    @Test
+    void check_ThirdAndSubsequentStrikes_ShouldNotifyDisplayBoardAccordingly() {
+        game.roll(10);
+        game.roll(10);
+        game.roll(10);
+        verify(displayBoard, times(1)).showStrike(TableauAffichage.StrikeSerie.TROISIEME_ET_PLUS);
+    }
+
+    @Test
+    void check_EndGame_ShouldCheckAndUpdateBestScores() {
+        game.endGame();
+        verify(displayBoard, times(1)).bestScores();
+        verify(displayBoard, times(1)).updateBestScores(anyInt());
     }
 }
