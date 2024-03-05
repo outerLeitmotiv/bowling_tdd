@@ -1,4 +1,4 @@
-package org.example;
+package org.example.ddd;
 
 public class Game {
     private int score = 0;
