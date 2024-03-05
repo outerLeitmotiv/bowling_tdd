@@ -1,55 +1,56 @@
 package functional;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BowlingFunctional {
+    static final List<Integer> rolls = new ArrayList<>();
 
-    public static List<Integer> addRoll(List<Integer> rolls, int pins) {
-        return Stream.concat(rolls.stream(), Stream.of(pins)).collect(Collectors.toList());
+    public static void addRoll(int pins) {
+        rolls.add(pins);
     }
 
-    public static boolean isStrike(List<Integer> frame) {
-        return frame.get(0) == 10;
+    private static boolean isStrike(int index) {
+        return rolls.get(index) == 10;
     }
 
-    public static boolean isSpare(List<Integer> frame) {
-        return frame.size() > 1 && frame.get(0) + frame.get(1) == 10;
+    private static boolean isSpare(int index) {
+        return rolls.get(index) + rolls.get(index + 1) == 10;
     }
 
-    public static int calculateFrameScore(List<Integer> frame, List<Integer> nextRolls) {
-        if (isStrike(frame)) {
-            int strikeBonus = nextRolls.stream().limit(2).mapToInt(Integer::intValue).sum();
-            return 10 + strikeBonus;
-        } else if (isSpare(frame)) {
-            int spareBonus = nextRolls.isEmpty() ? 0 : nextRolls.get(0);
-            return 10 + spareBonus;
-        } else {
-            return frame.stream().mapToInt(Integer::intValue).sum();
-        }
-    }
-
-
-    public static int calculateScore(List<List<Integer>> frames) {
-        List<Integer> allRolls = frames.stream()
-                .flatMap(List::stream)
-                .collect(Collectors.toList());
-
+    public static int calculateScore() {
         int score = 0;
-        int rollIndex = 0;
-        for (int frame = 0; frame < 10; frame++) {
-            if (isStrike(List.of(allRolls.get(rollIndex)))) { // Strike
-                score += 10 + allRolls.get(rollIndex + 1) + allRolls.get(rollIndex + 2);
-                rollIndex++;
-            } else if (isSpare(List.of(allRolls.get(rollIndex), allRolls.get(rollIndex + 1)))) {
-                score += 10 + allRolls.get(rollIndex + 2);
-                rollIndex += 2;
-            } else {
-                score += allRolls.get(rollIndex) + allRolls.get(rollIndex + 1);
-                rollIndex += 2;
-            }
+        for (int frame = 0, rollIndex = 0; frame < 10 && rollIndex < rolls.size(); frame++) {
+            score += scoreForFrame(rollIndex);
+            rollIndex += frameRolls(rollIndex);
         }
         return score;
+    }
+
+    private static int scoreForFrame(int rollIndex) {
+        return isStrike(rollIndex) ? 10 + strikeBonus(rollIndex) :
+                isSpare(rollIndex) ? 10 + spareBonus(rollIndex) :
+                        openFrameScore(rollIndex);
+    }
+
+    private static int strikeBonus(int index) {
+        return bonusRoll(index, 1) + bonusRoll(index, 2);
+    }
+
+    private static int spareBonus(int index) {
+        return bonusRoll(index, 2);
+    }
+
+    private static int openFrameScore(int index) {
+        return rolls.get(index) + bonusRoll(index, 1);
+    }
+
+    private static int bonusRoll(int index, int offset) {
+        int newIndex = index + offset;
+        return newIndex < rolls.size() ? rolls.get(newIndex) : 0;
+    }
+
+    private static int frameRolls(int index) {
+        return isStrike(index) ? 1 : 2;
     }
 }

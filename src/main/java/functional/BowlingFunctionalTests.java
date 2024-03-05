@@ -1,45 +1,55 @@
 package functional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Collections;
-import java.util.stream.IntStream;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class BowlingFunctionalTests {
 
+    @BeforeEach
+    public void setup() {
+        BowlingFunctional.rolls.clear();
+    }
+
     @Test
     public void check_20ZeroThrows_ShouldReturn0() {
-        var rolls = IntStream.generate(() -> 0).limit(20).boxed().toList();
-        int score = BowlingFunctional.calculateScore(Collections.singletonList(rolls));
-        assertEquals(0, score, "Score should be 0 for a game of all zero-point throws.");
+        addRolls(20, 0);
+        assertEquals(0, BowlingFunctional.calculateScore(), "Score should be 0 for a game of all zero-point throws.");
     }
 
     @Test
     public void check_20OnePointThrows_ShouldReturn20() {
-        var rolls = IntStream.generate(() -> 1).limit(20).boxed().toList();
-        int score = BowlingFunctional.calculateScore(Collections.singletonList(rolls));
-        assertEquals(20, score, "Score should be 20 for a game of all one-point throws.");
+        addRolls(20, 1);
+        assertEquals(20, BowlingFunctional.calculateScore(), "Score should be 20 for a game of all one-point throws.");
     }
 
     @Test
     public void check_1Spare_ShouldReturn16() {
-        var rolls = IntStream.concat(IntStream.of(5, 5, 3), IntStream.generate(() -> 0).limit(17)).boxed().toList();
-        int score = BowlingFunctional.calculateScore(Collections.singletonList(rolls));
-        assertEquals(16, score, "Score should be 16 for a spare followed by a three-point throw.");
+        addRolls(2, 5); // Spare
+        BowlingFunctional.addRoll(3);
+        addRolls(17, 0);
+        assertEquals(16, BowlingFunctional.calculateScore(), "Score should be 16 for a spare followed by a three-point throw.");
     }
 
     @Test
     public void check_1Strike_ShouldReturn24() {
-        var rolls = IntStream.concat(IntStream.of(10, 3, 4), IntStream.generate(() -> 0).limit(16)).boxed().toList();
-        int score = BowlingFunctional.calculateScore(Collections.singletonList(rolls));
-        assertEquals(24, score, "Score should be 24 for a strike followed by throws of three and four points.");
+        BowlingFunctional.addRoll(10);
+        BowlingFunctional.addRoll(3);
+        BowlingFunctional.addRoll(4);
+        addRolls(16, 0);
+        assertEquals(24, BowlingFunctional.calculateScore(), "Score should be 24 for a strike followed by throws of three and four points.");
     }
 
     @Test
     public void check_PerfectGame_ShouldReturn300() {
-        var rolls = IntStream.generate(() -> 10).limit(12).boxed().toList();
-        int score = BowlingFunctional.calculateScore(Collections.singletonList(rolls));
-        assertEquals(300, score, "Score should be 300 for a perfect game.");
+        addRolls(12, 10);
+        assertEquals(300, BowlingFunctional.calculateScore(), "Score should be 300 for a perfect game.");
+    }
+
+    // Helper method to add multiple rolls with the same number of pins
+    private void addRolls(int count, int pins) {
+        for (int i = 0; i < count; i++) {
+            BowlingFunctional.addRoll(pins);
+        }
     }
 }
