@@ -1,4 +1,4 @@
-package org.example;
+package org.example.ddd;
 
 public class Roll {
     private int pins;
